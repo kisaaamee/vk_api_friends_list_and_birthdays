@@ -1,0 +1,67 @@
+import requests
+import json
+import urllib.request
+from bs4 import BeautifulSoup
+import csv
+
+class MyVkData:
+    MY_USER_ID = '1'
+    NEW_USER = '1'
+    API_URL='https://api.vk.com/method/'
+    APP_ID=6623261
+    ACCESS_TOKEN='dfdab454dcb9541d633892819341fc34d40eaf2574b958bcd3bac75041436de6b5d87b951edd264b6638f'
+    USER_URL = 'https://vk.com/id'
+
+
+response = requests.get(MyVkData.API_URL+'friends.get',
+{'user_ids':MyVkData.NEW_USER,'access_token':MyVkData.ACCESS_TOKEN,'fields':'name','v':'5.52'})
+result = response.text
+otkl = json.loads(result)
+items = otkl['response']
+users = items['items']
+id_spis = []
+for user in users:
+    x = user['id']
+    id_spis.append(x)
+new_id = []   #список идентификаторов пользователей
+for id in id_spis:
+    new = MyVkData.USER_URL + str(id)
+    new_id.append(new)
+
+def get_html(url):
+    response = urllib.request.urlopen(url)
+    return response.read()
+
+def parse(html):
+    soup = BeautifulSoup(html,'html.parser')
+    b_days = []
+    try:
+        b_day = {soup.title.string:soup.dd.string}
+    except:
+        b_day = {soup.title.string:'Не указано'}
+
+    return b_day
+
+def save(x, path):
+    with open(path,'w') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(('Name','Birthday'))
+
+
+
+
+def main():
+    for us in new_id:
+
+        print(parse(get_html(us)))
+
+
+
+
+
+
+
+
+
+if __name__=='__main__':
+    main()
